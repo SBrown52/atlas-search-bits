@@ -1,0 +1,100 @@
+/**
+Some examples of simple search queries against the MFlix Database
+ */
+
+ // Find 15 films with vampires in the plot
+ db.movies.aggregate([{
+    $search: {
+        text: {
+            path: 'fullplot',
+            query: 'werewolves and vampires'
+        }
+    }
+}, {
+    $project: {
+        _id: 0,
+        title: 1,
+        year: 1,
+        fullplot: 1
+    }
+}, {
+    $limit: 5
+}])
+
+// Now show the score from each record
+db.movies.aggregate([{
+    $search: {
+        text: {
+            path: 'fullplot',
+            query: 'werewolves and vampires'
+        }
+    }
+}, {
+    $project: {
+        _id: 0,
+        title: 1,
+        year: 1,
+        fullplot: 1,
+        score: {
+            $meta: 'searchScore'
+        }
+    }
+}, {
+    $limit: 15
+}])
+
+/**
+    FUZZY SEARCH
+
+    This can be used to handle spellings, eg like vampores
+ */
+db.movies.aggregate([{
+    $search: {
+        text: {
+            path: 'fullplot',
+            query: 'wherewolves and vampores',
+            fuzzy: {maxEdits: 2, prefixLength: 0}
+        }
+    }
+}, {
+    $project: {
+        _id: 0,
+        title: 1,
+        year: 1,
+        fullplot: 1,
+        score: {
+            $meta: 'searchScore'
+        }
+    }
+}, {
+    $limit: 15
+}])
+
+/**
+
+    HIGHLIGHTING
+
+    Used to highlight the words we match on
+ */
+ db.movies.aggregate(  [
+  	{$search: {
+  		search: {
+  			path: 'fullplot',
+  			query: 'werewolves and vampires'
+  		},
+  		highlight: {
+  			path: "fullplot"
+  		}
+  	}},
+  	{$project: {
+  		_id: 0,
+  		title: 1,
+  		year: 1,
+  		fullplot: 1,
+  		score: {
+  			$meta: 'searchScore'
+  		},
+  		highlights: {"$meta":'searchHighlights'}
+  	}},
+  	{$limit: 15}
+  ])
