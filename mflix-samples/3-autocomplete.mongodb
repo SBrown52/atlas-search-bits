@@ -1,0 +1,41 @@
+/**
+
+    Autocomplete queries. NB: this requires an autocomplete enabled index, eg:
+
+    	{
+	"mappings": {
+		"dynamic": false,
+		"fields": {
+		"title": [
+			{
+			"foldDiacritics": false,
+			"maxGrams": 7,
+			"minGrams": 3,
+			"tokenization": "nGram",
+			"type": "autocomplete"
+			}
+		]
+		}
+	}
+	}
+
+ */
+
+ db.movies.aggregate([
+		{$search: {
+			"index": "ix_autocomplete",
+			"autocomplete": {
+				"query": 'fro',
+				"path": "title",
+				"tokenOrder": "any"
+			}
+		}},
+		{$project: {
+			title:  1,
+			_id:  0,
+			year:  1,
+			fullplot:  1
+		}},
+		{$limit:  3}
+	]
+)

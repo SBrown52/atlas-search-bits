@@ -1,0 +1,1 @@
+These are mongodb workbooks, they can be executed from VS Code if you have the MongoDB extension.
